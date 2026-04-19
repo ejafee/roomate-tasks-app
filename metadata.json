@@ -1,0 +1,6 @@
+{
+  "name": "Home Tasks",
+  "description": "A neo-brutalist chore tracking app for roommates with rotation, violation reporting, and fine management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

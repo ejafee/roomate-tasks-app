@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (getUserData().role == 'admin' || request.auth.token.email == 'b23.eyza@gmail.com');
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validation Helpers ---
+
+    function isValidUser(data) {
+      return data.uid is string &&
+             data.name is string && data.name.size() > 0 &&
+             data.role in ['admin', 'member'] &&
+             data.totalFines is number &&
+             data.warningPoints is number;
+    }
+
+    function isValidChore(data) {
+      return data.title is string && data.title.size() > 0 &&
+             data.fineAmount is number &&
+             data.cycle is list &&
+             data.currentAssigneeId is string &&
+             data.frequency is string &&
+             data.type in ['scheduled', 'on-demand', 'timed'];
+    }
+
+    function isValidTask(data) {
+      return data.choreId is string &&
+             data.assignedTo is string &&
+             data.status in ['pending', 'completed', 'missed'] &&
+             data.deadline is timestamp;
+    }
+
+    function isValidViolation(data) {
+      return data.reportedBy is string &&
+             data.violatorId is string &&
+             data.type is string &&
+             data.fineAmount is number &&
+             data.status in ['pending', 'accepted', 'revoked'] &&
+             data.createdAt is timestamp;
+    }
+
+    // --- Collection Rules ---
+
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    match /chores/{choreId} {
+      allow read, write: if true;
+    }
+
+    match /tasks/{taskId} {
+      allow read, write: if true;
+    }
+
+    match /violations/{violationId} {
+      allow read, write: if true;
+    }
+  }
+}

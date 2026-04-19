@@ -1,0 +1,84 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Roommate user account",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "member"] },
+        "totalFines": { "type": "number" },
+        "warningPoints": { "type": "number" },
+        "avatar": { "type": "string" }
+      },
+      "required": ["uid", "name", "role", "totalFines", "warningPoints"]
+    },
+    "Chore": {
+      "title": "Chore",
+      "description": "Definition of a recurring chore",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "fineAmount": { "type": "number" },
+        "cycle": { "type": "array" },
+        "currentAssigneeId": { "type": "string" },
+        "frequency": { "type": "string" },
+        "type": { "type": "string", "enum": ["scheduled", "on-demand", "timed"] },
+        "nextDeadline": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "fineAmount", "cycle", "currentAssigneeId", "frequency", "type"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Specific instance of a chore",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "choreId": { "type": "string" },
+        "assignedTo": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "completed", "missed"] },
+        "deadline": { "type": "string", "format": "date-time" },
+        "completedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "choreId", "assignedTo", "status", "deadline"]
+    },
+    "Violation": {
+      "title": "Violation",
+      "description": "Reported rule violation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "reportedBy": { "type": "string" },
+        "violatorId": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "fineAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "revoked"] },
+        "appeal": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "reportedBy", "violatorId", "type", "fineAmount", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Stores user profiles and stats"
+    },
+    "/chores/{choreId}": {
+      "schema": "Chore",
+      "description": "Stores chore definitions and current assignments"
+    },
+    "/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "Stores individual chore instances"
+    },
+    "/violations/{violationId}": {
+      "schema": "Violation",
+      "description": "Stores reports and violations"
+    }
+  }
+}
